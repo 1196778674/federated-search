@@ -99,11 +99,11 @@ const Container = styled.div`
   flex-flow: row nowrap;
   align-items: center;
 
-  .bizseer-faultlike-tag:not(:last-child) {
+  .ant-tag:not(:last-child) {
     margin-right: 2px;
   }
 
-  .bizseer-faultlike-tag:last-child {
+  .ant-tag:last-child {
     margin-right: 0;
   }
 `

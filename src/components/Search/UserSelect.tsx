@@ -281,12 +281,12 @@ const Container = styled.div<{ fullFill: boolean }>`
   position: relative;
   flex: ${props => props.fullFill ? 'auto' : 'none'};
 
-  .bizseer-faultlike-popover-inner-content {
+  .ant-popover-inner-content {
     padding: 4px;
     font-size: 12px;
   }
 
-  .bizseer-faultlike-popover {
+  .ant-popover {
     z-index: 10;
   }
 `
