@@ -48,6 +48,8 @@ export interface SearchProps {
   children?: any
 }
 
+export type ISymbolProps = '=' | '>' | '<' | '!='
+
 /**
  * 为表达式提供字段名的选择项数据结构
  */
@@ -59,6 +61,10 @@ interface GroupDatum {
    */
   unique?: boolean
   children: ItemDatum[]
+  /**
+   * 符号是否可以选择
+  */
+  symbol?: ISymbolProps
 }
 
 /**
@@ -80,6 +86,10 @@ export interface GroupProps {
    */
   unique?: boolean
   children?: React.ReactElement<ItemProps> | React.ReactElement<ItemProps>[]
+  /**
+   * 符号是否可以选择
+  */
+  symbol?: ISymbolProps
 }
 
 /**
@@ -161,7 +171,7 @@ export const Search: FC<SearchProps> & {
             return acc
           }, []) ?? []
 
-        acc.push({ label: child.props.label, value: child.props.value, unique: child.props.unique, children })
+        acc.push({ label: child.props.label, value: child.props.value, unique: child.props.unique, symbol: child.props.symbol, children })
 
         return acc
       }, []) ?? []
@@ -251,10 +261,10 @@ export const Search: FC<SearchProps> & {
       }
 
       const previous = [...value]
-
       previous[editingIndex] = {
         label: targetGroup.label,
         name: targetGroup.value,
+        symbol: targetGroup.symbol,
         value: [],
       }
 
@@ -319,6 +329,19 @@ export const Search: FC<SearchProps> & {
     setEditingIndex(index)
     setEditingPart(EditingPart.FIELD_VALUE)
   }, [notEditable, value])
+
+  /**
+   * 表达式修改符号
+  */
+  const handleSymbolChange = useCallback((index: number) => (symbol: ISymbolProps) => {
+    inputRef.current?.focus()
+    const list = [...value]
+    const previous = list.map((v, i) => ({
+      ...v,
+      symbol: i === index ? symbol : v?.symbol ?? undefined
+    }))
+    onChangeFun(previous)
+  }, [onChangeFun, value])
 
   /**
    * 表达式删除事件
@@ -486,6 +509,7 @@ export const Search: FC<SearchProps> & {
               onLabelClick={ handleValueClick(index) }
               onValueClick={ handleValueClick(index) }
               onRemove={ handleValueClose(index) }
+              onSymbolChange={handleSymbolChange(index)}
             />
           </React.Fragment>
         )) }
