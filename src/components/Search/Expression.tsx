@@ -1,8 +1,9 @@
-import { FC, useCallback } from 'react'
+import React, { FC, useCallback, useMemo, useState } from 'react'
 import styled from 'styled-components'
 
-import { Tag } from 'antd'
+import { Dropdown, Tag } from 'antd'
 import { TagProps } from 'antd/lib/tag'
+import { ISymbolProps } from './Search'
 
 /**
  * 表达式数据结构
@@ -25,6 +26,10 @@ export interface ExpressionValue {
    * 表达式只读, 此表达式不可编辑或删除
    */
   readonly?: boolean
+  /**
+   * 符号是否可以选择
+  */
+  symbol?: ISymbolProps
 }
 
 export interface ExpressionProps {
@@ -43,6 +48,10 @@ export interface ExpressionProps {
    * 当用户点击字段关闭时
    */
   onRemove?: () => void
+  /**
+   * 当用户修改symbol时
+  */
+  onSymbolChange?: (symbol: ISymbolProps) => void
 }
 
 /**
@@ -68,7 +77,21 @@ export enum EditingPart {
  * @returns 
  */
 export const Expression: FC<ExpressionProps> = props => {
-  const { value, editingPart, onLabelClick, onValueClick, onRemove } = props
+  const { value, editingPart, onLabelClick, onValueClick, onRemove, onSymbolChange } = props
+
+  const handleChangeSelect = useCallback((symbol: any) => {
+    setSymbolChecked(symbol)
+    onSymbolChange && onSymbolChange(symbol)
+  }, [onSymbolChange])
+
+  const symbolList = useMemo(() => [
+    { label: <div onClick={() => handleChangeSelect('=')}>{'='}</div>, key: '='},
+    { label: <div onClick={() => handleChangeSelect('>')}>{'>'}</div>, key: '>'},
+    { label: <div onClick={() => handleChangeSelect('<')}>{'<'}</div>, key: '<'},
+    { label: <div onClick={() => handleChangeSelect('!=')}>{'!='}</div>, key: '!='},
+  ], [handleChangeSelect])
+
+  const [symbolChecked, setSymbolChecked] = useState(value?.symbol ?? symbolList[0].key)
 
   const handleClose = useCallback<Required<TagProps>['onClick']>((e) => {
     e.preventDefault()
@@ -80,7 +103,13 @@ export const Expression: FC<ExpressionProps> = props => {
   return (
     <Container className='bizseer-ui-search-expr' onClick={ e => e.stopPropagation() }>
       { value?.label && <Tag onClick={ value.readonly ? undefined : onLabelClick }>{ value?.label }</Tag> }
-      { value?.label && <Tag onClick={ value.readonly ? undefined : onLabelClick }>=</Tag> }
+      {/* { value?.label && <Tag onClick={ value.readonly ? undefined : onLabelClick }>=</Tag> } */}
+      {value?.label && <>
+        {value.symbol ?
+          <Dropdown menu={{items: symbolList}}>
+            <Tag style={{cursor: 'pointer'}}>{symbolChecked}</Tag>
+          </Dropdown> : <Tag onClick={ value.readonly ? undefined : onLabelClick }>=</Tag>}
+      </>}
       { !!value?.value.length && editingPart !== EditingPart.FIELD_VALUE &&
         value.value.map(item => (
           <Tag key={ item[0] } color='blue' closable={ !value.readonly }
